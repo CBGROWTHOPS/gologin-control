@@ -25,6 +25,16 @@ export type ProfileListResponse = {
   allProfilesCount: number;
 };
 
+export async function getHealth(): Promise<{ status: string; version?: string } | null> {
+  try {
+    const r = await fetch(`${API}/health`);
+    if (r.ok) return r.json();
+  } catch {
+    /* proxy unreachable */
+  }
+  return null;
+}
+
 export async function getStatus() {
   return handleRes<{ ok: boolean; token_set: boolean }>(await fetch(`${API}/status`));
 }

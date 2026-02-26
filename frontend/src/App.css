@@ -29,9 +29,32 @@ body {
 }
 
 .tagline {
-  margin: 0.25rem 0 1.5rem;
+  margin: 0.25rem 0 0.5rem;
   font-size: 0.75rem;
   color: #71717a;
+}
+
+.proxy-status {
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+}
+
+.proxy-status .dot {
+  color: #71717a;
+}
+
+.proxy-status .dot.live {
+  color: #22c55e;
+}
+
+.proxy-status .dot.offline {
+  color: #ef4444;
+}
+
+.backend-version {
+  margin: 0 0 1rem;
+  font-size: 0.7rem;
+  color: #52525b;
 }
 
 .sidebar nav {

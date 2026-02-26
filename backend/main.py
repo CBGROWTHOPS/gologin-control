@@ -1,5 +1,6 @@
 """GoLogin Control Center API. Proxies to GoLogin API using local token."""
 
+import sys
 from contextlib import asynccontextmanager
 
 import httpx
@@ -17,14 +18,17 @@ from gologin import (
     list_profiles,
     rename_profile,
 )
+from version import __version__
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
         get_token()
-    except Exception as e:
-        print(f"Warning: Token not available at startup: {e}")
+    except Exception:
+        print("ERROR: GoLogin token not found.")
+        sys.exit(1)
+    print("GoLogin Control Backend running on :8000")
     yield
 
 
@@ -46,6 +50,19 @@ def _get_token():
         raise HTTPException(status_code=503, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=503, detail=str(e))
+
+
+@app.get("/health")
+@app.get("/api/health")
+async def health():
+    """No auth. Returns 200 if the proxy process is running."""
+    return {"status": "ok", "version": __version__}
+
+
+@app.get("/api/version")
+async def version():
+    """Backend version for UI display."""
+    return {"version": __version__}
 
 
 def _handle_http(err: httpx.HTTPStatusError):

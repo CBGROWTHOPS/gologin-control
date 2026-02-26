@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Profiles } from './Profiles'
 import { CreateProfile } from './CreateProfile'
 import { AddProxy } from './AddProxy'
 import { QuickCreate } from './QuickCreate'
 import { Traffic } from './Traffic'
+import { getHealth } from './api'
 import './App.css'
 
 type Page = 'profiles' | 'create' | 'proxy' | 'quick' | 'traffic'
@@ -11,6 +12,19 @@ type Page = 'profiles' | 'create' | 'proxy' | 'quick' | 'traffic'
 function App() {
   const [page, setPage] = useState<Page>('profiles')
   const [error, setError] = useState<string | null>(null)
+  const [proxyLive, setProxyLive] = useState<boolean | null>(null)
+  const [backendVersion, setBackendVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    const check = () =>
+      getHealth().then((h) => {
+        setProxyLive(h?.status === 'ok')
+        if (h?.version) setBackendVersion(h.version)
+      })
+    check()
+    const id = setInterval(check, 10000)
+    return () => clearInterval(id)
+  }, [])
 
   const nav = (p: Page) => () => {
     setError(null)
@@ -22,6 +36,12 @@ function App() {
       <aside className="sidebar">
         <h1 className="logo">GoLogin</h1>
         <p className="tagline">Control Center</p>
+        <div className="proxy-status" aria-live="polite">
+          {proxyLive === true && <span className="dot live" title="Backend proxy is running">● Proxy live</span>}
+          {proxyLive === false && <span className="dot offline" title="Start the backend (uvicorn)">○ Proxy offline</span>}
+          {proxyLive === null && <span className="dot">…</span>}
+        </div>
+        {backendVersion && <p className="backend-version">Backend v{backendVersion}</p>}
         <nav>
           <button
             className={page === 'profiles' ? 'active' : ''}
